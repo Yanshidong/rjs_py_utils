@@ -1,3 +1,6 @@
+import time
+
+
 class RjsDatabase(object):
     def setDbName(self,name):
         self.name=name
@@ -52,8 +55,17 @@ class DbStorage:
         # 加载 数据库，选择表
         self.driver = driver
         self.driver.execute_script('window.RjsTableUtils=null;window.RjsDB=null;')
+        #初始化全局数据,异步等待使用
+        self.driver.execute_script('window.RjsData={};')
         self.set_database(database)
         if table is not None: self.set_table(table)
+    def back2hell(self,hell_key):
+        while self.driver.execute_script('return window.RjsData["'+hell_key+'"]') is None:
+            print('等待异步回调结果:'+hell_key)
+            time.sleep(0.1)
+        print('等待结束----获取到返回值----:'+hell_key)
+        return self.driver.execute_script('return window.RjsData["' + hell_key + '"]')
+
     # 设置当前表
     def set_table(self,table:RjsTable):
         # 重设 table,创建table 及主键，基础索引.当前未处理其他索引.
@@ -69,14 +81,16 @@ class DbStorage:
         #执行js代码，打开对应版本的数据库
         self.driver.execute_script('window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB'+";window.RjsDB=indexedDB.open('" + str(self.database.name) + "', "+ str(self.database.version) +");")
     def __len__(self):
-        return self.driver.execute_script("return window.localStorage.length;")
+        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
     # 以map形式返回所有数据
     def items(self):
         return 1
     def keys(self):
         return 1
+    def pv2jv(self,pv):
+       return '"' + pv + '"' if isinstance(pv, str) else str(pv)
     def get(self, key):
-        return 1
+        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.get('+self.pv2jv(key)+').onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
     def get_all(self):
         dic = {}
         for key in self.keys():
@@ -88,12 +102,15 @@ class DbStorage:
         for key,value in dic.items():
             res=(res if res == '{' else res+',')+str(key)+':'+('"'+value+'"' if isinstance(value,str) else str(value) )
         return res+'}'
-    def set_all(self, maps):
-        for key, value in maps.items():
-            self.set(key, value)
+    def set_all(self, lists):
+        for value in lists:
+            self.add(value)
     def add(self,tableEntity):
         entityStr = self.dic2str(tableEntity)
         self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.add('+entityStr+').onsuccess=function(event){console.log("res:",event.target.result)};')
+    def put(self,tableEntity):
+        entityStr = self.dic2str(tableEntity)
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.put('+entityStr+').onsuccess=function(event){console.log("res:",event.target.result)};')
 
     def set(self, key, value):
         return
