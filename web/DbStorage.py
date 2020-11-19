@@ -59,12 +59,16 @@ class DbStorage:
         self.driver.execute_script('window.RjsData={};')
         self.set_database(database)
         if table is not None: self.set_table(table)
+        time.sleep(0.5)
     def back2hell(self,hell_key):
         while self.driver.execute_script('return window.RjsData["'+hell_key+'"]') is None:
             print('等待异步回调结果:'+hell_key)
             time.sleep(0.1)
         print('等待结束----获取到返回值----:'+hell_key)
-        return self.driver.execute_script('return window.RjsData["' + hell_key + '"]')
+        # 处理 undefined情况
+        res = self.driver.execute_script('return window.RjsData["' + hell_key + '"]')
+        if res == "rjsUndefined": return None
+        return res
 
     # 设置当前表
     def set_table(self,table:RjsTable):
@@ -86,11 +90,11 @@ class DbStorage:
     def items(self):
         return 1
     def keys(self):
-        return 1
+        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.getAllKeys().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
     def pv2jv(self,pv):
        return '"' + pv + '"' if isinstance(pv, str) else str(pv)
     def get(self, key):
-        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.get('+self.pv2jv(key)+').onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
+        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.get('+self.pv2jv(key)+').onsuccess=function(event){window.RjsData[res]=event.target.result===undefined?"rjsUndefined":event.target.result;console.log("res:",event.target.result)};return res'))
     def get_all(self):
         dic = {}
         for key in self.keys():
@@ -102,7 +106,7 @@ class DbStorage:
         for key,value in dic.items():
             res=(res if res == '{' else res+',')+str(key)+':'+('"'+value+'"' if isinstance(value,str) else str(value) )
         return res+'}'
-    def set_all(self, lists):
+    def add_all(self, lists):
         for value in lists:
             self.add(value)
     def add(self,tableEntity):
@@ -111,15 +115,15 @@ class DbStorage:
     def put(self,tableEntity):
         entityStr = self.dic2str(tableEntity)
         self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.put('+entityStr+').onsuccess=function(event){console.log("res:",event.target.result)};')
-
-    def set(self, key, value):
-        return
     def has(self, key):
-        return False
+        return self.get(key) is not None
     def remove(self, key):
-        return 1
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("res:",event.target.result)};')
+    def delete(self, key):
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        return True
     def clear(self):
-        return 1
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.clear().onsuccess=function(event){console.log("res:",event.target.result)};')
     def __getitem__(self, key):
         value = self.get(key)
         if value is None:
