@@ -78,10 +78,11 @@ class DbStorage:
     def set_table(self,table:RjsTable):
         # 重设 table,创建table 及主键，基础索引.当前未处理其他索引.
         self.table=RjsTable(name=str(table.name),primaryKey=table.primaryKey,autoIncrement=table.autoIncrement,version=str(table.version),createUniquePrimary=table.createUniquePrimary)
-        print('设置表:')
-        print(self.table.name)
-        print('window.RjsDB.onupgradeneeded=function(e){var db=window.RjsDB.result;window.RjsTableUtils=db;var store=db.createObjectStore("' + str(self.table.name) + '"'+('' if self.table.primaryKey is None else ',{'+('keyPath:"'+str(self.table.primaryKey)+'",')+'autoIncrement: '+ ('true' if self.table.autoIncrement else 'false') + '}')+');'+('store.createIndex("primary_key_id_unqiue","'+str(self.table.primaryKey)+'",{unique:true})};' if self.table.createUniquePrimary else '};'))
-        self.driver.execute_script('window.RjsDB.onupgradeneeded=function(e){var db=window.RjsDB.result;window.RjsTableUtils=db;var store=db.createObjectStore("' + str(self.table.name) + '"'+('' if self.table.primaryKey is None else ',{'+('keyPath:"'+str(self.table.primaryKey)+'",')+'autoIncrement: '+ ('true' if self.table.autoIncrement else 'false') + '}')+');'+('store.createIndex("primary_key_id_unqiue","'+str(self.table.primaryKey)+'",{unique:true})};' if self.table.createUniquePrimary else '};'))
+        print('设置表:'+self.table.name)
+        js_command = 'window.RjsDB.onupgradeneeded=function(e){var db=window.RjsDB.result;window.RjsTableUtils=db;var store=db.createObjectStore("' + str(self.table.name) + '"'+('' if self.table.primaryKey is None else ',{'+('keyPath:"'+str(self.table.primaryKey)+'",')+'autoIncrement: '+ ('true' if self.table.autoIncrement else 'false') + '}')+');'+('store.createIndex("primary_key_id_unqiue","'+str(self.table.primaryKey)+'",{unique:true})};' if self.table.createUniquePrimary else '};')+('window.RjsDB.onsuccess=function(event){window.RjsTableUtils=event.target.result;var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){console.log("count:",event.target.result)}};window.RjsDB.onerror=function(event){console.log(event.target)};')
+        self.table_command= js_command
+        print(js_command)
+        self.driver.execute_script(self.database_command+self.table_command)
         # self.driver.execute_script('window.RjsDB.onsuccess=function(event){window.RjsTableUtils=event.target.result;var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] success!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){console.log("count:",event.target.result)}};')
     def reselect_table(self):
         self.table=None
@@ -91,7 +92,9 @@ class DbStorage:
         # self.reselect_table()
         #执行js代码，打开对应版本的数据库
         print('设置数据库:')
-        print('window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB'+";window.RjsDB=indexedDB.open('" + str(self.database.name) + "', "+ str(self.database.version) +");")
+        js_command = 'window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB'+";window.RjsDB=indexedDB.open('" + str(self.database.name) + "', "+ str(self.database.version) +");"
+        print(js_command)
+        self.database_command=js_command
         self.driver.execute_script('window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB'+";window.RjsDB=indexedDB.open('" + str(self.database.name) + "', "+ str(self.database.version) +");")
     def __len__(self):
         return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
