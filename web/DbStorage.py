@@ -35,19 +35,23 @@ class RjsTable(object):
         self.create_index(name,keyPath,False)
     # 创建主键 唯一索引.
     def setPrimary(self,primary):
-        self.primaryKey=primary
-        self.create_index_unique('primary_key',primary)
+        if primary is not None:
+            self.primaryKey = str(primary)
+            self.create_index_unique('primary_key', primary)
+        else:
+            self.primaryKey = None
     # 初始化表.
     def setVersion(self,version):
         self.version=str(version)
     def getVersion(self):
         return self.version
-    def __init__(self,name,primaryKey,autoIncrement=False,version='1') -> None:
+    def __init__(self,name,primaryKey=None,autoIncrement=False,version='1',createUniquePrimary=True) -> None:
         self.init_index()
         self.setTableName(str(name))
-        self.setPrimary(str(primaryKey))
+        self.setPrimary(primaryKey)
         self.autoIncrement=autoIncrement
         self.setVersion(version)
+        self.createUniquePrimary=createUniquePrimary
 
 class DbStorage:
     ## 初始化 driver和 db name
@@ -73,8 +77,11 @@ class DbStorage:
     # 设置当前表
     def set_table(self,table:RjsTable):
         # 重设 table,创建table 及主键，基础索引.当前未处理其他索引.
-        self.table=RjsTable(name=str(table.name),primaryKey=str(table.primaryKey),autoIncrement=table.autoIncrement,version=str(table.version))
-        self.driver.execute_script('window.RjsDB.onupgradeneeded=function(e){var db=window.RjsDB.result;window.RjsTableUtils=db;var store=db.createObjectStore("' + str(self.table.name) + '",{keyPath:"'+str(self.table.primaryKey)+'",autoIncrement: '+ ('true' if self.table.autoIncrement else 'false') + '});store.createIndex("student_id_unqiue","'+str(self.table.primaryKey)+'",{unique:true})};')
+        self.table=RjsTable(name=str(table.name),primaryKey=table.primaryKey,autoIncrement=table.autoIncrement,version=str(table.version),createUniquePrimary=table.createUniquePrimary)
+        print('设置表:')
+        print(self.table.name)
+        print('window.RjsDB.onupgradeneeded=function(e){var db=window.RjsDB.result;window.RjsTableUtils=db;var store=db.createObjectStore("' + str(self.table.name) + '"'+('' if self.table.primaryKey is None else ',{'+('keyPath:"'+str(self.table.primaryKey)+'",')+'autoIncrement: '+ ('true' if self.table.autoIncrement else 'false') + '}')+');'+('store.createIndex("primary_key_id_unqiue","'+str(self.table.primaryKey)+'",{unique:true})};' if self.table.createUniquePrimary else '};'))
+        self.driver.execute_script('window.RjsDB.onupgradeneeded=function(e){var db=window.RjsDB.result;window.RjsTableUtils=db;var store=db.createObjectStore("' + str(self.table.name) + '"'+('' if self.table.primaryKey is None else ',{'+('keyPath:"'+str(self.table.primaryKey)+'",')+'autoIncrement: '+ ('true' if self.table.autoIncrement else 'false') + '}')+');'+('store.createIndex("primary_key_id_unqiue","'+str(self.table.primaryKey)+'",{unique:true})};' if self.table.createUniquePrimary else '};'))
         # self.driver.execute_script('window.RjsDB.onsuccess=function(event){window.RjsTableUtils=event.target.result;var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] success!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){console.log("count:",event.target.result)}};')
     def reselect_table(self):
         self.table=None
@@ -83,12 +90,17 @@ class DbStorage:
         self.database = database
         # self.reselect_table()
         #执行js代码，打开对应版本的数据库
+        print('设置数据库:')
+        print('window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB'+";window.RjsDB=indexedDB.open('" + str(self.database.name) + "', "+ str(self.database.version) +");")
         self.driver.execute_script('window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB'+";window.RjsDB=indexedDB.open('" + str(self.database.name) + "', "+ str(self.database.version) +");")
     def __len__(self):
         return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
     # 以map形式返回所有数据
     def items(self):
-        return 1
+        dic = {}
+        for key in self.keys():
+            dic[key] = self.get(key)
+        return dic
     def keys(self):
         return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.getAllKeys().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
     def pv2jv(self,pv):
@@ -109,21 +121,28 @@ class DbStorage:
     def add_all(self, lists):
         for value in lists:
             self.add(value)
-    def add(self,tableEntity):
+    def add(self,tableEntity,key=None):
         entityStr = self.dic2str(tableEntity)
-        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.add('+entityStr+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        print('var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.add('+entityStr+('' if key is None else ','+self.pv2jv(key))+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.add('+entityStr+('' if key is None else ','+self.pv2jv(key))+').onsuccess=function(event){console.log("res:",event.target.result)};')
     def put(self,tableEntity):
         entityStr = self.dic2str(tableEntity)
-        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.put('+entityStr+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.put('+entityStr+').onsuccess=function(event){console.log("res:",event.target.result)};')
+    def put_kv(self,key,value):
+        self.driver.execute_script(
+            'var transaction=window.RjsTableUtils.transaction(["' + self.table.name + '"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("' + self.table.name + '");studentsStore.put(' +self.pv2jv(value)+','+self.pv2jv(key)+ ').onsuccess=function(event){console.log("res:",event.target.result)};')
     def has(self, key):
         return self.get(key) is not None
     def remove(self, key):
-        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("res:",event.target.result)};')
     def delete(self, key):
-        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("res:",event.target.result)};')
         return True
     def clear(self):
-        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["users"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("users");studentsStore.clear().onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.clear().onsuccess=function(event){console.log("res:",event.target.result)};')
+    # 这个方法暂时不好使
+    def drop_table(self):
+        self.driver.execute_script('')
     def __getitem__(self, key):
         value = self.get(key)
         if value is None:
@@ -141,4 +160,5 @@ class DbStorage:
 
     def __repr__(self):
         return self.items().__str__()
+
 
