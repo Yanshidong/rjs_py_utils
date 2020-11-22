@@ -107,7 +107,22 @@ class DbStorage:
     def keys(self):
         return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.getAllKeys().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
     def pv2jv(self,pv):
-       return '"' + pv + '"' if isinstance(pv, str) else str(pv)
+        if isinstance(pv, str):
+            return '"' + pv + '"'
+        elif isinstance(pv,bool):
+            return 'true' if pv else 'false'
+        elif isinstance(pv,int):
+            return str(pv)
+        elif isinstance(pv,float):
+            return str(pv)
+        elif isinstance(pv,list):
+            return str(pv)
+        elif isinstance(pv,set):
+            return str(pv)
+        elif isinstance(pv,dict):
+            return self.dic2str(pv)
+        elif isinstance(pv,tuple):
+            return str(tuple)
     def get(self, key):
         return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.get('+self.pv2jv(key)+').onsuccess=function(event){window.RjsData[res]=event.target.result===undefined?"rjsUndefined":event.target.result;console.log("res:",event.target.result)};return res'))
     def get_all(self):
@@ -134,6 +149,9 @@ class DbStorage:
     def put_kv(self,key,value):
         self.driver.execute_script(
             'var transaction=window.RjsTableUtils.transaction(["' + self.table.name + '"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("' + self.table.name + '");studentsStore.put(' +self.pv2jv(value)+','+self.pv2jv(key)+ ').onsuccess=function(event){console.log("res:",event.target.result)};')
+    def put_kv_blob(self,key,value):
+        self.driver.execute_script(
+            'var transaction=window.RjsTableUtils.transaction(["' + self.table.name + '"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("' + self.table.name + '");studentsStore.put(new Blob(' +self.pv2jv(value)+'),'+self.pv2jv(key)+ ').onsuccess=function(event){console.log("res:",event.target.result)};')
     def has(self, key):
         return self.get(key) is not None
     def remove(self, key):
