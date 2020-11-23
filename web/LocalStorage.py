@@ -1,7 +1,11 @@
+from transfer.JsTransfer import JsTransfer
 class LocalStorage:
 
     def __init__(self, driver):
         self.driver = driver
+        self.jstransfer=JsTransfer(self.driver)
+        self.driver.execute_script(self.jstransfer.data_utils())
+        self.driver.execute_script(self.jstransfer.fun_utils())
 
     def __len__(self):
         return self.driver.execute_script("return window.localStorage.length;")
@@ -34,7 +38,7 @@ class LocalStorage:
             self.set(key, value)
 
     def set(self, key, value):
-        self.driver.execute_script("window.localStorage.setItem(arguments[0], arguments[1]);", key, value)
+        self.driver.execute_script('window.localStorage.setItem('+self.jstransfer.pv2jv(key)+','+self.jstransfer.pv2jv(value)+');')
 
     def has(self, key):
         return key in self.keys()

@@ -9,7 +9,13 @@ driver.maximize_window()
 
 driver.get("https://www.baidu.com")
 
-# db = DbStorage(driver,RjsDatabase(name='localforage',version=2),RjsTable(name='keyvaluepairs',createUniquePrimary=False))
+ls=LocalStorage(driver)
+ls.set_all({'wwwPassLogout': '0', 'bool': 'true', 'BIDUPSID': '1AD83F7E9E88BC56CCFE6524AEA72517', 'str': 'i am a', 'map': '[object Object]', 'safeIconHis': '', 'int': '123'})
+print('getAll():')
+print(ls.get_all())
+
+
+# driver.close()
 
 
 
@@ -18,8 +24,6 @@ driver.get("https://www.baidu.com")
 
 
 
-
-driver.minimize_window()
 
 
 
