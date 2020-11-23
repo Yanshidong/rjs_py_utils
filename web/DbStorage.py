@@ -3,6 +3,8 @@ from io import TextIOWrapper, BufferedReader
 
 import chardet
 
+from transfer.JsTransfer import JsTransfer
+
 
 class RjsDatabase(object):
     def setDbName(self,name):
@@ -62,10 +64,10 @@ class DbStorage:
         # 加载 数据库，选择表
         self.driver = driver
         # 工具加载
-        self.driver.execute_script('window.RjsTableUtils=null;window.RjsDB=null;')
-        self.driver.execute_script('window.rjs_blobToDataURI=function(blob,res_token){var reader=new FileReader();reader.readAsDataURL(blob);reader.onload=function(e){console.log(e.target.result);if(res_token!==undefined){window.RjsData[res_token]=e.target.result}}};window.rjs_dataURItoBlob=function(base64Data){var byteString;if(base64Data.split(",")[0].indexOf("base64")>=0){byteString=atob(base64Data.split(",")[1])}else{byteString=unescape(base64Data.split(",")[1])}var mimeString=base64Data.split(",")[0].split(":")[1].split(";")[0];var ia=new Uint8Array(byteString.length);for(var i=0;i<byteString.length;i++){ia[i]=byteString.charCodeAt(i)}var blob=new Blob([ia],{type:mimeString});return blob};window.rjs_any_beauty=function(obj,res_token){if(res_token===undefined){res_token=Math.random()+""}if(window.RjsData===undefined){window.RjsData={}}if(obj instanceof Blob){window.rjs_blobToDataURI(obj,res_token)}else{if(typeof obj==="number"){window.RjsData[res_token]=obj}else{if(typeof obj==="boolean"){window.RjsData[res_token]=obj}else{if(typeof obj==="string"){window.RjsData[res_token]=obj}}}}return res_token};window.rjs_beauty_any=function(obj){if(obj instanceof Blob){return obj}else{if(typeof obj==="number"){return obj}else{if(typeof obj==="boolean"){return obj}else{if(typeof obj==="string"){if(obj.indexOf("data:")===0){return window.rjs_dataURItoBlob(obj)}return obj}else{return obj}}}}};')
+        self.jstransfer = JsTransfer(driver)
+        self.driver.execute_script(self.jstransfer.data_utils())
+        self.driver.execute_script(self.jstransfer.fun_utils())
         #初始化全局数据,异步等待使用
-        self.driver.execute_script('window.RjsData={};')
         self.set_database(database)
         if table is not None: self.set_table(table)
         time.sleep(0.5)

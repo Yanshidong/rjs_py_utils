@@ -15,7 +15,7 @@ print('getAll():')
 print(ls.get_all())
 
 
-# driver.close()
+driver.close()
 
 
 

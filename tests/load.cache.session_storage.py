@@ -12,22 +12,9 @@ driver.get("https://www.baidu.com")
 
 #-----------------------------------------------------------------------------
 ss= SessionStorage(driver)
-ss.set('ss_key1bool',True)
-ss.set('str','ahah哈哈,.- s')
-ss.set('ints',1234)
-ss.set('map',{"type":"jxxx","xxx":False,"fan":123,"mm":{"K":1,"b":True}})
-print(ss.get('ss_key1bool'))
-print(ss.get('map'))
+ss.set_all({'ints': '1234', 'str': 'ahah哈哈,.- s', 'ss_key1bool': 'true'})
 print('getAll():')
 print(ss.get_all())
-print(ss.keys())
-print(str(len(ss)))
-print('keys():')
-print(ss.keys())
-print('-----')
-print(ss.get('map'))
-print('items:')
-print(ss.items())
 
 
 
