@@ -14,17 +14,13 @@ class CookieStorage:
         return self.driver.self.driver.get_cookies()
 
     def keys(self):
-        return self.driver.execute_script( \
-            "var ls = window.localStorage, keys = []; " \
-            "for (var i = 0; i < ls.length; ++i) " \
-            "  keys[i] = ls.key(i); " \
-            "return keys; ")
+        return self.get_all().keys()
 
     def get(self, key):
         return self.driver.get_cookie(key)
 
     def get_all(self):
-        return self.driver.self.driver.get_cookies()
+        return self.driver.get_cookies()
 
     def set_all(self, maps):
         for key, value in maps.items():
