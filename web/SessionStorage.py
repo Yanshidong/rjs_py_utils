@@ -29,7 +29,10 @@ class SessionStorage:
             "return keys; ")
 
     def get(self, key):
-        return self.driver.execute_script("return window.sessionStorage.getItem(arguments[0]);", key)
+        js_command='return window.sessionStorage.getItem('+self.jstransfer.pv2jv(key)+');'
+        print('get:'+key)
+        print(js_command)
+        return self.driver.execute_script(js_command)
 
     def get_all(self):
         dic = {}
@@ -42,7 +45,10 @@ class SessionStorage:
             self.set(key, value)
 
     def set(self, key, value):
-        self.driver.execute_script('window.sessionStorage.setItem('+self.pv2jv(key)+', '+self.pv2jv(value)+');')
+        js_command='window.sessionStorage.setItem('+self.pv2jv(key)+', '+self.pv2jv(value)+');'
+        print('set(key:'+key)
+        print(js_command)
+        self.driver.execute_script(js_command)
 
     def has(self, key):
         return key in self.keys()

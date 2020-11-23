@@ -24,12 +24,16 @@ print(ss.keys())
 print(str(len(ss)))
 print('keys():')
 print(ss.keys())
+print('-----')
+print(ss.get('map'))
+print('items:')
+print(ss.items())
 
 
 
 
 #------------------------------------------------------------------------------
-driver.minimize_window()
+driver.close()
 
 
 
