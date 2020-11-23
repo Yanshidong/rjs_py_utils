@@ -123,23 +123,23 @@ class DbStorage:
             return '"' + (pv.replace('"', '\\"')) + '"'
         elif isinstance(pv, TextIOWrapper):
             file_str = ''
-            type = pv.name.split('__rjs__').pop().replace('.', '/')
-            if type is None or type == '': type = 'text/plain'
+            type_f = pv.name.split('__rjs__').pop().replace('.', '/')
+            if type_f is None or type_f == '': type_f = 'text/plain'
             for line_str in pv.readlines():
                 line_str = line_str.replace('\n', '\\n')
                 file_str += self.pv2jv(line_str) if file_str == '' else ',' + self.pv2jv(line_str)
-            return 'new Blob([' + file_str + '],{"type":' + self.pv2jv(type) + '})'
+            return 'new Blob([' + file_str + '],{"type":' + self.pv2jv(type_f) + '})'
         elif isinstance(pv, BufferedReader):
             file_str = ''
-            type = pv.name.split('__rjs__').pop().replace('.', '/')
-            if type is None or type == '': type = 'text/plain'
+            type_f = pv.name.split('__rjs__').pop().replace('.', '/')
+            if type_f is None or type_f == '': type_f = 'text/plain'
             encoding = None
             for line_str in pv.readlines():
                 if encoding == None: encoding = chardet.detect(line_str)['encoding']
                 if encoding == None: encoding = 'utf-8'
                 line_str = str(line_str).lstrip('b').strip("'")
                 file_str += self.pv2jv(line_str) if file_str == '' else ',' + self.pv2jv(line_str)
-            return 'new Blob([' + file_str + '],{"type":' + self.pv2jv(type) + '})'
+            return 'new Blob([' + file_str + '],{"type":' + self.pv2jv(type_f) + '})'
         elif isinstance(pv, set):
             return str(pv)
         elif isinstance(pv, tuple):
@@ -154,7 +154,7 @@ class DbStorage:
 
     def get(self, key):
         print('get('+key+'):')
-        js_command='var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.get('+self.pv2jv(key)+').onsuccess=function(event){window.rjs_any_beauty(event.target.result===undefined?"rjsUndefined":event.target.result,res);console.log("res:",event.target.result)};return res'
+        js_command='var res=Math.random()+"";var transaction=window.RjsTableUtils.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.get('+self.pv2jv(key)+').onsuccess=function(event){window.rjs_any_beauty(event.target.result===undefined?"rjsUndefined":event.target.result,res);window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'
         print(js_command)
         return self.back2hell(self.driver.execute_script(js_command))
     def get_all(self):
@@ -165,9 +165,9 @@ class DbStorage:
     # 字典转js字符串  {id:14,name:"小张2",age:"13"}
     def dic2str(self,dic):
         res = '{'
-        for key,value in dic.items():
-            res=(res if res == '{' else res+',')+str(key)+':'+('"'+value+'"' if isinstance(value,str) else str(value) )
-        return res+'}'
+        for key, value in dic.items():
+            res = (res if res == '{' else res + ',') + self.pv2jv(key) + ':' + self.pv2jv(value)
+        return res + '}'
     def add_all(self, lists):
         for value in lists:
             self.add(value)
