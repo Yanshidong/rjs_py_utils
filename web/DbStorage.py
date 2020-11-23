@@ -140,12 +140,17 @@ class DbStorage:
                 line_str = str(line_str).lstrip('b').strip("'")
                 file_str += self.pv2jv(line_str) if file_str == '' else ',' + self.pv2jv(line_str)
             return 'new Blob([' + file_str + '],{"type":' + self.pv2jv(type) + '})'
-        elif isinstance(pv, list):
-            return str(pv)
         elif isinstance(pv, set):
             return str(pv)
         elif isinstance(pv, tuple):
             return str(tuple)
+        elif type(pv).__name__ == 'dict':
+            return self.dic2str(pv)
+        elif isinstance(pv, list):
+            res = ''
+            for v1 in pv:
+                res = res +(self.pv2jv(v1) if res=='' else ','+self.pv2jv(v1))
+            return '['+res+']'
 
     def get(self, key):
         print('get('+key+'):')
