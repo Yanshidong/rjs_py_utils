@@ -158,6 +158,7 @@ class DbStorage:
         print(js_command)
         return self.back2hell(self.driver.execute_script(js_command))
     def get_all(self):
+        print('getAll():')
         dic = {}
         for key in self.keys():
             dic[key] = self.get(key)
@@ -184,6 +185,9 @@ class DbStorage:
         print('添加(key-value):'+key)
         print(js_command)
         self.driver.execute_script(js_command)
+    def put_kv_all(self,kvs):
+        for key,value in kvs.items():
+            self.put_kv(key,value)
     def has(self, key):
         return self.get(key) is not None
     def remove(self, key):
