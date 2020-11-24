@@ -21,6 +21,10 @@ driver.get("http://pax-design-tool-sit.aidesign.ingka-dt.cn")  # 地址栏里输
 # s.load_storage()
 
 time.sleep(10)
+s = Storage(CookieStorage(driver),LocalStorage(driver),SessionStorage(driver),DbStorage(driver,RjsDatabase('localforage',2),RjsTable("keyvaluepairs",createUniquePrimary=False)))
+s.load_storage()
+s.load_db()
+print('-------------缓存加载完毕.')
 driver.find_element_by_css_selector(
     "#root > div > div.wrap > div.choose-store > section.store-setting-area > div > div:nth-child(1) > div.ant-select.ant-select-enabled").click()  # 定位国家选择
 time.sleep(2)
@@ -114,15 +118,17 @@ def write_txt(a1):
 
 #点击设计衣柜
 ready_homepage()
-s = Storage(CookieStorage(driver),LocalStorage(driver),SessionStorage(driver),DbStorage(driver,RjsDatabase('localforage',2),RjsTable("keyvaluepairs",createUniquePrimary=False)))
+# s = Storage(CookieStorage(driver),LocalStorage(driver),SessionStorage(driver),DbStorage(driver,RjsDatabase('localforage',2),RjsTable("keyvaluepairs",createUniquePrimary=False)))
+# s.save_storage()
+# s.save_db()
 time.sleep(3)
 print('点击设计衣柜')
 driver.find_element_by_xpath('//*[@id="root"]/div/div[2]/div[2]/div[1]/div[2]/div/span').click()#点击立柜设计
 
 #选择立柜设计
 ready_select_wardrobe_type_page()
-print('选择立柜')
-time.sleep(3)
+print('------------------over------------------')
+exit(1)
 ActionChains(driver).move_by_offset(830,537).click().perform() #通过坐标定位点击
 ActionChains(driver).move_by_offset(-830,-537).perform() #将坐标回溯
 
