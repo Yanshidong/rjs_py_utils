@@ -5,6 +5,9 @@ from web.SessionStorage import SessionStorage
 import pickle
 
 class Storage:
+    def has_cache(self):
+        f = open(self.cs_all_file_name,'r')
+        return False
     def __init__(self,cs:CookieStorage,ls:LocalStorage,ss:SessionStorage,db:DbStorage) -> None:
         self.cs_all_file_name='./tmp/cookie_all.pckl'
         self.ss_all_file_name='./tmp/session_all.pckl'

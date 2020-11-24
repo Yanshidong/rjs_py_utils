@@ -1,16 +1,25 @@
 from selenium import webdriver
 import time
 from selenium.webdriver.common.action_chains import ActionChains
-from utils.web.LocalStorage import LocalStorage
-from utils.web.DbStorage import *
+
+from web.CookieStorage import CookieStorage
+from web.LocalStorage import LocalStorage
+from web.DbStorage import *
 
 #定义一个空字典传入遍历结果
+from web.SessionStorage import SessionStorage
+from web.Storage import Storage
+
 wardrobe_combination ={}
 
 #进入pax系统，选择BU与商场
 driver = webdriver.Chrome('C:\Program Files (x86)\Google\Chrome\Application\chromedriver.exe')
 driver.maximize_window() #最大化窗口
 driver.get("http://pax-design-tool-sit.aidesign.ingka-dt.cn")  # 地址栏里输入网址
+# 读取缓存,写入,并跳转到Homepage
+s = Storage(CookieStorage(driver),LocalStorage(driver),SessionStorage(driver),DbStorage(driver,RjsDatabase('localforage',2),RjsTable("keyvaluepairs",createUniquePrimary=False)))
+s.load_storage()
+
 time.sleep(10)
 driver.find_element_by_css_selector(
     "#root > div > div.wrap > div.choose-store > section.store-setting-area > div > div:nth-child(1) > div.ant-select.ant-select-enabled").click()  # 定位国家选择
@@ -105,7 +114,7 @@ def write_txt(a1):
 
 #点击设计衣柜
 ready_homepage()
-db = DbStorage(driver,RjsDatabase(name='localforage',version=2),RjsTable(name='keyvaluepairs',createUniquePrimary=False))
+s = Storage(CookieStorage(driver),LocalStorage(driver),SessionStorage(driver),DbStorage(driver,RjsDatabase('localforage',2),RjsTable("keyvaluepairs",createUniquePrimary=False)))
 time.sleep(3)
 print('点击设计衣柜')
 driver.find_element_by_xpath('//*[@id="root"]/div/div[2]/div[2]/div[1]/div[2]/div/span').click()#点击立柜设计
