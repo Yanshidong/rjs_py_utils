@@ -17,8 +17,8 @@ driver = webdriver.Chrome('C:\Program Files (x86)\Google\Chrome\Application\chro
 driver.maximize_window() #最大化窗口
 driver.get("http://pax-design-tool-sit.aidesign.ingka-dt.cn")  # 地址栏里输入网址
 # 读取缓存,写入,并跳转到Homepage
-s = Storage(CookieStorage(driver),LocalStorage(driver),SessionStorage(driver),DbStorage(driver,RjsDatabase('localforage',2),RjsTable("keyvaluepairs",createUniquePrimary=False)))
-s.load_storage()
+# s = Storage(CookieStorage(driver),LocalStorage(driver),SessionStorage(driver),DbStorage(driver,RjsDatabase('localforage',2),RjsTable("keyvaluepairs",createUniquePrimary=False)))
+# s.load_storage()
 
 time.sleep(10)
 driver.find_element_by_css_selector(

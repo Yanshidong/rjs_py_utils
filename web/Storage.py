@@ -1,3 +1,5 @@
+import os
+
 from web.CookieStorage import CookieStorage
 from web.DbStorage import DbStorage
 from web.LocalStorage import LocalStorage
@@ -9,9 +11,10 @@ class Storage:
         f = open(self.cs_all_file_name,'r')
         return False
     def __init__(self,cs:CookieStorage,ls:LocalStorage,ss:SessionStorage,db:DbStorage) -> None:
-        self.cs_all_file_name='./tmp/cookie_all.pckl'
-        self.ss_all_file_name='./tmp/session_all.pckl'
-        self.ls_all_file_name='./tmp/local.pckl'
+        self.base_path=self.make_dir_exist('./tmp')
+        self.cs_all_file_name=self.base_path+'/cookie_all.pckl'
+        self.ss_all_file_name=self.base_path+'/session_all.pckl'
+        self.ls_all_file_name=self.base_path+'/local.pckl'
         self.cs=cs
         self.ls=ls
         self.ss=ss
@@ -33,6 +36,16 @@ class Storage:
         self.file_push(ss_data,self.ss_all_file_name)
     def save_local_storage(self):
         self.file_push(self.ls.get_all(),self.ls_all_file_name)
+    def make_dir_exist(self,dir_path:str):
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        return dir_path
+    def save_db(self):
+        table_name=self.db.table
+        table_path=self.make_dir_exist(self.base_path+'/'+table_name)
+        for key_1 in self.db.keys():
+            f_key_name=key_1
+            self.file_push(self.db.get(key_1),table_path+'/'+f_key_name)
     def load_cookie(self):
         cs_data=self.file_pull(self.cs_all_file_name)
         self.cs.set_all(cs_data)
