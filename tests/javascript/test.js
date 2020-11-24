@@ -1,7 +1,3 @@
-var res=Math.random()+"";
-var transaction=window.RjsTableUtils.transaction(["keyvaluepairs"],"readwrite");
-transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};
-var studentsStore=transaction.objectStore("keyvaluepairs");
-studentsStore.get("dic").onsuccess=function(event){window.rjs_any_beauty(event.target.result===undefined?"rjsUndefined":event.target.result,res);
-window.RjsData[res]=event.target.result;
-console.log("res:",event.target.result)};
+if(window.RjsTableUtils===undefined)window.RjsTableUtils=null;if(window.RjsDB===undefined)window.RjsDB=null;if(window.RjsData===undefined)window.RjsData={};
+window.rjs_blobToDataURI=function(blob,res_token){var reader=new FileReader();reader.readAsDataURL(blob);reader.onload=function(e){console.log(e.target.result);if(res_token!==undefined){window.RjsData[res_token]=e.target.result}}};window.rjs_dataURItoBlob=function(base64Data){var byteString;if(base64Data.split(",")[0].indexOf("base64")>=0){byteString=atob(base64Data.split(",")[1])}else{byteString=unescape(base64Data.split(",")[1])}var mimeString=base64Data.split(",")[0].split(":")[1].split(";")[0];var ia=new Uint8Array(byteString.length);for(var i=0;i<byteString.length;i++){ia[i]=byteString.charCodeAt(i)}var blob=new Blob([ia],{type:mimeString});return blob};window.rjs_any_beauty=function(obj,res_token){if(res_token===undefined){res_token=Math.random()+""}if(window.RjsData===undefined){window.RjsData={}}if(obj instanceof Blob){window.rjs_blobToDataURI(obj,res_token)}else{if(typeof obj==="number"){window.RjsData[res_token]=obj}else{if(typeof obj==="boolean"){window.RjsData[res_token]=obj}else{if(typeof obj==="string"){window.RjsData[res_token]=obj}}}}return res_token};window.rjs_beauty_any=function(obj){if(obj instanceof Blob){return obj}else{if(typeof obj==="number"){return obj}else{if(typeof obj==="boolean"){return obj}else{if(typeof obj==="string"){if(obj.indexOf("data:")===0){return window.rjs_dataURItoBlob(obj)}return obj}else{return obj}}}}};
+window.localStorage.setItem("wwwPassLogout","0");
