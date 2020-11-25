@@ -1,7 +1,7 @@
 import os
 
 from web.CookieStorage import CookieStorage
-from web.DbStorage import DbStorage
+from web.DbStorage import DbStorage, RjsTable
 from web.LocalStorage import LocalStorage
 from web.SessionStorage import SessionStorage
 import pickle
@@ -58,19 +58,26 @@ class Storage:
             for fi in files:
                 keys_list.append(fi.replace('__rjs__','/'))
         return keys_list
-    def save_db(self):
+    def save_table(self,table_obj:RjsTable):
+        self.db.switch_table(table_obj.name)
         table_name=self.db.table.name
         table_path=self.make_dir_exist(self.base_path+'/'+table_name)
         for key_1 in self.db.keys():
             f_key_name=key_1.replace('/','__rjs__')
             self.file_push(self.db.get(key_1),table_path+'/'+f_key_name)
-    def load_db(self):
+    def save_db(self):
+        for table_1 in self.db.database.get_tables():
+            self.save_table(table_1)
+    def load_table(self,table:RjsTable):
+        self.db.switch_table(table.name)
         table_path=self.base_path+'/'+self.db.table.name
         # 获得 keys,
         for key_1 in self.get_keys_in_dir(table_path):
             print('----加载缓存-key:'+key_1+'-----')
             self.db.put_kv(key_1,self.file_pull(table_path+'/'+(key_1.replace('/','__rjs__'))))
-
+    def load_db(self):
+        for table_1 in self.db.database.get_tables():
+            self.load_table(table_1)
     def load_cookie(self):
         cs_data=self.file_pull(self.cs_all_file_name)
         self.cs.set_all(cs_data)
