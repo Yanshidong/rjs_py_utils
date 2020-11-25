@@ -9,9 +9,9 @@ from web.DbStorage import *
 driver = webdriver.Chrome('C:\Program Files (x86)\Google\Chrome\Application\chromedriver.exe')
 driver.maximize_window()
 
-driver.get("https://element.eleme.cn/#/zh-CN")
+driver.get("https://www.baidu.com")
 
-db = DbStorage(driver,RjsDatabase(name='localforage',version=2),RjsTable(name='keyvaluepairs',createUniquePrimary=False))
+db = DbStorage(driver,RjsDatabase('localforage',2,[RjsTable(name='keyvaluepairs',createUniquePrimary=False),RjsTable(name='local-forage-detect-blob-support',createUniquePrimary=False)]))
 print(db.get_all())
 db.put_kv_all({
 'boo':True,
@@ -19,6 +19,14 @@ db.put_kv_all({
 'str':'哈哈哈哈aabbj123,. s',
 'dic':{"k":"v","k1":1,"dic":{"d":12,"c":False}}
 })
+print('-------------all 1')
+print(db.get_all())
+db.switch_table('local-forage-detect-blob-support')
+db.put_kv_all({
+'boo':True,
+'dic':{"k":"v","k1":1,"dic":{"d":12,"c":False}}
+})
+print('--------------all 2')
 print(db.get_all())
 #
 #
@@ -28,7 +36,6 @@ print(db.get_all())
 #
 #
 driver.close()
-
 
 
 print('---------------over----------------')
