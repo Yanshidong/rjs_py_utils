@@ -1,2 +1,2 @@
-from data.RjsRandom import RjsRandom
+from utils.data.RjsRandom import RjsRandom
 

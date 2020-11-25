@@ -3,8 +3,8 @@ from io import TextIOWrapper, BufferedReader
 
 import chardet
 
-from data import RjsRandom
-from transfer.JsTransfer import JsTransfer
+from utils.data import RjsRandom
+from utils.transfer import JsTransfer
 
 class RjsTable(object):
     def setTableName(self,name):

@@ -1,4 +1,4 @@
-from transfer.JsTransfer import JsTransfer
+from utils.transfer import JsTransfer
 class LocalStorage:
 
     def __init__(self, driver):

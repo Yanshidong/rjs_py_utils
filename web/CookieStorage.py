@@ -1,6 +1,6 @@
 import time
 
-from transfer.JsTransfer import JsTransfer
+from utils.transfer import JsTransfer
 
 
 class Cookie:

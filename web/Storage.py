@@ -1,9 +1,9 @@
 import os
 
-from web.CookieStorage import CookieStorage
-from web.DbStorage import DbStorage, RjsTable
-from web.LocalStorage import LocalStorage
-from web.SessionStorage import SessionStorage
+from utils.web import CookieStorage
+from utils.web import DbStorage, RjsTable
+from utils.web import LocalStorage
+from utils.web import SessionStorage
 import pickle
 
 class Storage:

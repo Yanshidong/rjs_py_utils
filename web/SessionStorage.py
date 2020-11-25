@@ -1,7 +1,7 @@
 from io import TextIOWrapper, BufferedReader
 
 import chardet
-from transfer.JsTransfer import JsTransfer
+from utils.transfer import JsTransfer
 
 class SessionStorage:
 
