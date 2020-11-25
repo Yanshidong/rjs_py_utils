@@ -35,7 +35,7 @@ print(db.get_all())
 #
 #
 #
-driver.close()
+# driver.close()
 
 
 print('---------------over----------------')

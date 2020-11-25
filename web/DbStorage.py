@@ -120,7 +120,7 @@ class DbStorage:
         print('设置表:'+self.table.name)
         js_command = 'window.'+self.db_v_name+'.onupgradeneeded=function(e){var db=window.'+self.db_v_name+'.result;window.'+self.table_v_name+'=db;'+self.get_table_create_js_str()+'};window.'+self.db_v_name+'.onsuccess=function(event){window.'+self.table_v_name+'=event.target.result;var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){window.RjsData[res_token]=event.target.result;console.log("count:",event.target.result)}};window.'+self.db_v_name+'.onerror=function(event){console.log(event.target)};'
         self.table_command= js_command
-        print(js_command)
+        #print(js_command)
         self.back2hell(self.driver.execute_script('var res_token=Math.random()+"";'+self.database_command+self.table_command+'return res_token;'))
     def get_table_create_js_str(self):
         create_table_str=''
@@ -137,10 +137,10 @@ class DbStorage:
         #执行js代码，打开对应版本的数据库
         print('设置数据库:')
         js_command = 'window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB'+";window."+self.db_v_name+"=indexedDB.open('" + str(self.database.name) + "', "+ str(self.database.version) +");"
-        print(js_command)
+        #print(js_command)
         self.database_command=js_command
     def __len__(self):
-        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
+        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.count().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("success")};return res'))
     # 以map形式返回所有数据
     def items(self):
         dic = {}
@@ -148,7 +148,7 @@ class DbStorage:
             dic[key] = self.get(key)
         return dic
     def keys(self):
-        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.getAllKeys().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'))
+        return self.back2hell(self.driver.execute_script('var res=Math.random()+"";var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.getAllKeys().onsuccess=function(event){window.RjsData[res]=event.target.result;console.log("success")};return res'))
 
     def pv2jv(self,pv):
         if isinstance(pv, bool):
@@ -192,8 +192,8 @@ class DbStorage:
 
     def get(self, key):
         print('get('+key+'):')
-        js_command='var res=Math.random()+"";var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.get('+self.pv2jv(key)+').onsuccess=function(event){window.rjs_any_beauty(event.target.result===undefined?"rjsUndefined":event.target.result,res);window.RjsData[res]=event.target.result;console.log("res:",event.target.result)};return res'
-        print(js_command)
+        js_command='var res=Math.random()+"";var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.get('+self.pv2jv(key)+').onsuccess=function(event){window.rjs_any_beauty(event.target.result===undefined?"rjsUndefined":event.target.result,res);window.RjsData[res]=event.target.result;console.log("success")};return res'
+        #print(js_command)
         return self.back2hell(self.driver.execute_script(js_command))
     def get_all(self):
         print('getAll():')
@@ -212,16 +212,16 @@ class DbStorage:
             self.add(value)
     def add(self,tableEntity,key=None):
         entityStr = self.dic2str(tableEntity)
-        print('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.add('+entityStr+('' if key is None else ','+self.pv2jv(key))+').onsuccess=function(event){console.log("res:",event.target.result)};')
-        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.add('+entityStr+('' if key is None else ','+self.pv2jv(key))+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        print('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.add('+entityStr+('' if key is None else ','+self.pv2jv(key))+').onsuccess=function(event){console.log("success")};')
+        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.add('+entityStr+('' if key is None else ','+self.pv2jv(key))+').onsuccess=function(event){console.log("success")};')
     def put(self,tableEntity):
         entityStr = self.dic2str(tableEntity)
-        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.put('+entityStr+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.put('+entityStr+').onsuccess=function(event){console.log("success")};')
     # 当不设置主键索引时,使用该方法,或想将indexedDB当作kv方式使用
     def put_kv(self,key,value):
-        js_command='var transaction=window.'+self.table_v_name+'.transaction(["' + self.table.name + '"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("' + self.table.name + '");studentsStore.put(window.rjs_beauty_any(' +self.pv2jv(value)+'),'+self.pv2jv(key)+ ').onsuccess=function(event){console.log("res:",event.target.result)};'
+        js_command='var transaction=window.'+self.table_v_name+'.transaction(["' + self.table.name + '"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("' + self.table.name + '");studentsStore.put(window.rjs_beauty_any(' +self.pv2jv(value)+'),'+self.pv2jv(key)+ ').onsuccess=function(event){console.log("success")};'
         print('添加(key-value):'+key)
-        print(js_command)
+        # #print(js_command)
         self.driver.execute_script(js_command)
     def put_kv_all(self,kvs):
         for key,value in kvs.items():
@@ -229,12 +229,12 @@ class DbStorage:
     def has(self, key):
         return self.get(key) is not None
     def remove(self, key):
-        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("success")};')
     def delete(self, key):
-        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.delete('+self.pv2jv(key)+').onsuccess=function(event){console.log("success")};')
         return True
     def clear(self):
-        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.clear().onsuccess=function(event){console.log("res:",event.target.result)};')
+        self.driver.execute_script('var transaction=window.'+self.table_v_name+'.transaction(["'+self.table.name+'"],"readwrite");transaction.onsuccess=function(event){console.log("[Transaction] 好了!")};var studentsStore=transaction.objectStore("'+self.table.name+'");studentsStore.clear().onsuccess=function(event){console.log("success")};')
     # 这个方法暂时不好使
     def drop_table(self):
         self.driver.execute_script('')
