@@ -7,9 +7,20 @@ from web.SessionStorage import SessionStorage
 import pickle
 
 class Storage:
+    # 判断是否已经缓存过
+    # @Return Bool
     def has_cache(self):
-        f = open(self.cs_all_file_name,'r')
-        return False
+        return os.path.exists(self.cs_all_file_name) and os.path.exists(self.ls_all_file_name) and os.path.exists(self.ss_all_file_name)
+    def save_if_not_exits(self):
+        if not self.has_cache():
+            print('----未检测到缓存文件:执行保存操作----')
+            self.save_storage()
+            self.save_db()
+    def load_if_exits(self):
+        if self.has_cache():
+            print('----检测到存在缓存:加载缓存操作----')
+            self.load_storage()
+            self.load_db()
     def __init__(self,cs:CookieStorage,ls:LocalStorage,ss:SessionStorage,db:DbStorage) -> None:
         self.base_path=self.make_dir_exist('./tmp')
         self.cs_all_file_name=self.base_path+'/cookie_all.pckl'
