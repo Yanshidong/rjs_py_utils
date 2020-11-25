@@ -5,22 +5,6 @@ import chardet
 
 from transfer.JsTransfer import JsTransfer
 
-
-class RjsDatabase(object):
-    def setDbName(self,name):
-        self.name=name
-    def getDbName(self):
-        return self.name
-    def setDbVersion(self,version):
-        self.version=str(version)
-    def getDbVersion(self):
-        return self.version
-
-    def __init__(self,name,version=1) -> None:
-        self.setDbName(name)
-        self.setDbVersion(version)
-
-
 class RjsTable(object):
     def setTableName(self,name):
         self.name=name
@@ -58,9 +42,36 @@ class RjsTable(object):
         self.setVersion(version)
         self.createUniquePrimary=createUniquePrimary
 
+class RjsDatabase():
+    def setDbName(self,name):
+        self.name=name
+    def getDbName(self):
+        return self.name
+    def setDbVersion(self,version):
+        self.version=str(version)
+    def getDbVersion(self):
+        return self.version
+
+    def addTable(self,table:RjsTable):
+        self.tables[table.name]=table
+
+    def __init__(self,name,version=1,tables:list=None) -> None:
+        self.setDbName(name)
+        self.setDbVersion(version)
+        self.tables={}
+        if tables is not None:
+            for table in tables:
+                self.addTable(table)
+
+
+
+
 class DbStorage:
     ## 初始化 driver和 db name
     def __init__(self, driver,database:RjsDatabase,table:RjsTable=None):
+        # 初始化容器
+        self.database_tables={}
+        #
         # 加载 数据库，选择表
         self.driver = driver
         # 工具加载
@@ -71,6 +82,7 @@ class DbStorage:
         self.set_database(database)
         if table is not None: self.set_table(table)
         time.sleep(0.5)
+
     def back2hell(self,hell_key):
         while self.driver.execute_script('return window.RjsData["'+hell_key+'"]') is None:
             print('等待异步回调结果:'+hell_key)
