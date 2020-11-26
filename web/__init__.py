@@ -1,8 +1,9 @@
 ###############################################
-#  ËùÓÐä¯ÀÀÆ÷²å¼þ
+#  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #
 ################################################
 from utils.web.DbStorage import RjsTable
+from utils.web.DbStorage import RjsDatabase
 from utils.web.CookieStorage import CookieStorage
 from utils.web.SessionStorage import SessionStorage
 from utils.web.Storage import Storage
