@@ -68,7 +68,9 @@ class Storage:
         self.db.switch_table(table_obj.name)
         table_name=self.db.table.name
         table_path=self.make_dir_exist(self.base_path+'/'+table_name)
-        for key_1 in self.db.keys():
+        total_record=len(self.db)
+        for index,key_1 in enumerate(self.db.keys()):
+            print("保存表数据---key:"+key_1+"----进度:"+str(index+1)+'/'+str(total_record))
             f_key_name=key_1.replace('/','__rjs__')
             self.file_push(self.db.get(key_1),table_path+'/'+f_key_name)
     def save_db(self):
@@ -79,8 +81,9 @@ class Storage:
         self.db.switch_table(table.name)
         table_path=self.base_path+'/'+self.db.table.name
         # 获得 keys,
-        for key_1 in self.get_keys_in_dir(table_path):
-            print('----加载缓存-key:'+key_1+'-----')
+        total_record=len(self.get_keys_in_dir(table_path))
+        for index,key_1 in enumerate(self.get_keys_in_dir(table_path)):
+            print('----加载表数据-key:'+key_1+'-----进度:'+str(index+1)+'/'+str(total_record))
             self.db.put_kv(key_1,self.file_pull(table_path+'/'+(key_1.replace('/','__rjs__'))))
     def load_db(self):
         for table_1 in self.db.database.get_tables():
